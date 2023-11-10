@@ -1,0 +1,186 @@
+import numpy as np
+import tkinter as tk
+import time
+
+# Inicializa o ambiente com sujeira em posições aleatórias
+ambiente = np.random.choice([0, 1], size=(4, 4), p=[0.5, 0.5])
+
+
+class AgenteAspirador:
+    def __init__(self):
+        self.energia = 100
+        self.sacola = 0
+        self.posicao = [0, 0]  # Agora o agente sempre começa no ponto [0, 0]
+        self.estado = "desligado"
+
+    def observar_ambiente(self):
+        return ambiente[self.posicao[0], self.posicao[1]]
+
+    def limpar_sujeira(self):
+        if ambiente[self.posicao[0], self.posicao[1]] == 1:
+            ambiente[self.posicao[0], self.posicao[1]] = 0
+            self.sacola += 1
+            self.energia -= 1
+
+    def esvaziar_sacola(self):
+        self.sacola = 0
+
+    def determinar_acao(self):
+        if self.estado == "desligado":
+            return None
+
+        sujeiras = []
+        for i in range(4):
+            for j in range(4):
+                if ambiente[i, j] == 1:
+                    sujeiras.append([i, j])
+
+        if self.sacola == 10:
+            self.retornar_casa()
+            self.esvaziar_sacola()
+
+        elif sujeiras:
+            sujeira_mais_proxima = min(sujeiras, key=lambda x: abs(x[0] - self.posicao[0]) + abs(x[1] - self.posicao[1]))
+            direcao_x = sujeira_mais_proxima[0] - self.posicao[0]
+            direcao_y = sujeira_mais_proxima[1] - self.posicao[1]
+
+            if direcao_x > 0:
+                return 'mover_sul'
+            elif direcao_x < 0:
+                return 'mover_norte'
+            elif direcao_y > 0:
+                return 'mover_leste'
+            elif direcao_y < 0:
+                return 'mover_oeste'
+            else:
+                return 'limpar'
+        else:
+            self.retornar_casa()
+
+    def executar_acao(self, acao):
+        if self.estado == "desligado":
+            return
+
+        if acao == 'mover_norte':
+            if self.posicao[0] > 0:
+                self.posicao[0] -= 1
+        elif acao == 'mover_sul':
+            if self.posicao[0] < 3:
+                self.posicao[0] += 1
+        elif acao == 'mover_leste':
+            if self.posicao[1] < 3:
+                self.posicao[1] += 1
+        elif acao == 'mover_oeste':
+            if self.posicao[1] > 0:
+                self.posicao[1] -= 1
+        elif acao == 'limpar':
+            self.limpar_sujeira()
+        elif acao == 'retornar_casa':
+            self.retornar_casa()
+
+        if acao is not None:
+            self.energia -= 1
+
+    def retornar_casa(self):
+        while self.posicao != [0, 0] and self.energia > 0:
+            if self.posicao[0] > 0:
+                self.posicao[0] -= 1
+            else:
+                self.posicao[1] -= 1
+            self.energia -= 1
+            interface.atualizar_interface()
+            time.sleep(1)
+
+
+class InterfaceGrafica:
+    def __init__(self, root, agente):
+        self.root = root
+        self.agente = agente
+
+        self.frame_superior = tk.Frame(root)
+        self.frame_superior.pack(side=tk.LEFT, padx=20, pady=20)
+
+        self.estado_frame = tk.Frame(self.frame_superior)
+        self.estado_frame.pack(side=tk.LEFT)
+
+        self.rotulo_estado = tk.Label(self.estado_frame, text=f"Estado:{self.agente.estado}")
+        self.rotulo_estado.pack()
+
+        self.cor_estado = tk.Canvas(self.estado_frame, width=20, height=20)
+        self.cor_estado.pack()
+        self.atualizar_cor_estado()  # Atualiza a cor inicial do estado
+
+        self.rotulo_info = tk.Label(self.frame_superior, text="")
+        self.rotulo_info.pack()
+
+        self.frame_inferior = tk.Frame(root)
+        self.frame_inferior.pack(side=tk.LEFT, padx=20, pady=20)
+
+        self.canvas = tk.Canvas(self.frame_inferior, width=400, height=400)
+        self.canvas.pack()
+
+        self.botao_toggle = tk.Button(self.frame_superior, text="Ligar/Desligar", command=self.alternar_estado)
+        self.botao_toggle.pack(side=tk.LEFT)  # Coloca o botão no mesmo lado que os contadores
+
+    def alternar_estado(self):
+        if self.agente.estado == "ligado":
+            self.agente.estado = "desligado"
+            self.rotulo_estado.config(text="Estado: Desligado")
+        else:
+            self.agente.estado = "ligado"
+            self.rotulo_estado.config(text="Estado: Ligado")
+        self.atualizar_cor_estado()  # Atualiza a cor do estado quando o botão é pressionado
+
+    def atualizar_cor_estado(self):
+        cor = "green" if self.agente.estado == "ligado" else "red"
+        self.cor_estado.create_rectangle(0, 0, 20, 20, fill=cor)
+
+    def atualizar_interface(self):
+        self.canvas.delete("all")
+        for i in range(4):
+            for j in range(4):
+                cor = "white" if ambiente[i, j] == 0 else "black"
+                self.canvas.create_rectangle(j * 100, i * 100, (j + 1) * 100, (i + 1) * 100, fill=cor)
+        cor_agente = "yellow" if ambiente[self.agente.posicao[0], self.agente.posicao[1]] == 1 else "blue"
+        self.canvas.create_rectangle(self.agente.posicao[1] * 100, self.agente.posicao[0] * 100,
+                                     (self.agente.posicao[1] + 1) * 100, (self.agente.posicao[0] + 1) * 100,
+                                     fill=cor_agente)
+
+        self.rotulo_info.config(
+            text=f"Energia: {self.agente.energia}, Sacola: {self.agente.sacola},")
+        self.root.update_idletasks()
+
+
+# Restante do código permanece o mesmo
+
+
+agente = AgenteAspirador()
+
+root = tk.Tk()
+root.title("Agente Aspirador")
+root.geometry("800x500")
+
+interface = InterfaceGrafica(root, agente)
+
+def iterar():
+    if agente.energia > 0:
+        interface.atualizar_interface()
+        if agente.sacola <= 10:
+            acao = agente.determinar_acao()
+            agente.executar_acao(acao)
+            interface.atualizar_interface()
+            root.after(2000, iterar)
+        else:
+            agente.retornar_casa()
+            agente.esvaziar_sacola()
+            acao = agente.determinar_acao()
+            agente.executar_acao(acao)
+            interface.atualizar_interface()
+            root.after(1000, iterar)
+    else:
+        interface.rotulo_estado.config(text="Estado: Desligado")
+        interface.botao_toggle.config(state=tk.DISABLED)
+
+
+iterar()
+root.mainloop()
