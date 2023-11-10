@@ -1,0 +1,58 @@
+import numpy as np
+import tkinter as tk
+import time
+
+# Inicializa o ambiente com sujeira em posições aleatórias
+ambiente = np.random.choice([0, 1], size=(4, 4), p=[0.5, 0.5])
+
+
+class AgenteAspirador:
+    def __init__(self):
+        self.energia = 100
+        self.sacola = 0
+        self.posicao = [0, 0]  # Agora o agente sempre começa no ponto [0, 0]
+        self.estado = "desligado"
+
+    def observar_ambiente(self):
+        return ambiente[self.posicao[0], self.posicao[1]]
+
+    def limpar_sujeira(self):
+        if ambiente[self.posicao[0], self.posicao[1]] == 1:
+            ambiente[self.posicao[0], self.posicao[1]] = 0
+            self.sacola += 1
+            self.energia -= 1
+
+    def esvaziar_sacola(self):
+        self.sacola = 0
+
+    def determinar_acao(self):
+        if self.estado == "desligado":
+            return None
+
+        sujeiras = []
+        for i in range(4):
+            for j in range(4):
+                if ambiente[i, j] == 1:
+                    sujeiras.append([i, j])
+
+        if self.sacola == 10:
+            self.retornar_casa()
+            self.esvaziar_sacola()
+
+        elif sujeiras:
+            sujeira_mais_proxima = min(sujeiras, key=lambda x: abs(x[0] - self.posicao[0]) + abs(x[1] - self.posicao[1]))
+            direcao_x = sujeira_mais_proxima[0] - self.posicao[0]
+            direcao_y = sujeira_mais_proxima[1] - self.posicao[1]
+
+            if direcao_x > 0:
+                return 'mover_sul'
+            elif direcao_x < 0:
+                return 'mover_norte'
+            elif direcao_y > 0:
+                return 'mover_leste'
+            elif direcao_y < 0:
+                return 'mover_oeste'
+            else:
+                return 'limpar'
+        else:
+            self.retornar_casa()
