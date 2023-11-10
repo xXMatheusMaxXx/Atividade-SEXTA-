@@ -1,0 +1,57 @@
+class InterfaceGrafica:
+    def __init__(self, root, agente):
+        self.root = root
+        self.agente = agente
+
+        self.frame_superior = tk.Frame(root)
+        self.frame_superior.pack(side=tk.LEFT, padx=20, pady=20)
+
+        self.estado_frame = tk.Frame(self.frame_superior)
+        self.estado_frame.pack(side=tk.LEFT)
+
+        self.rotulo_estado = tk.Label(self.estado_frame, text=f"Estado:{self.agente.estado}")
+        self.rotulo_estado.pack()
+
+        self.cor_estado = tk.Canvas(self.estado_frame, width=20, height=20)
+        self.cor_estado.pack()
+        self.atualizar_cor_estado()  # Atualiza a cor inicial do estado
+
+        self.rotulo_info = tk.Label(self.frame_superior, text="")
+        self.rotulo_info.pack()
+
+        self.frame_inferior = tk.Frame(root)
+        self.frame_inferior.pack(side=tk.LEFT, padx=20, pady=20)
+
+        self.canvas = tk.Canvas(self.frame_inferior, width=400, height=400)
+        self.canvas.pack()
+
+        self.botao_toggle = tk.Button(self.frame_superior, text="Ligar/Desligar", command=self.alternar_estado)
+        self.botao_toggle.pack(side=tk.LEFT)  # Coloca o botão no mesmo lado que os contadores
+
+    def alternar_estado(self):
+        if self.agente.estado == "ligado":
+            self.agente.estado = "desligado"
+            self.rotulo_estado.config(text="Estado: Desligado")
+        else:
+            self.agente.estado = "ligado"
+            self.rotulo_estado.config(text="Estado: Ligado")
+        self.atualizar_cor_estado()  # Atualiza a cor do estado quando o botão é pressionado
+
+    def atualizar_cor_estado(self):
+        cor = "green" if self.agente.estado == "ligado" else "red"
+        self.cor_estado.create_rectangle(0, 0, 20, 20, fill=cor)
+
+    def atualizar_interface(self):
+        self.canvas.delete("all")
+        for i in range(4):
+            for j in range(4):
+                cor = "white" if ambiente[i, j] == 0 else "black"
+                self.canvas.create_rectangle(j * 100, i * 100, (j + 1) * 100, (i + 1) * 100, fill=cor)
+        cor_agente = "yellow" if ambiente[self.agente.posicao[0], self.agente.posicao[1]] == 1 else "blue"
+        self.canvas.create_rectangle(self.agente.posicao[1] * 100, self.agente.posicao[0] * 100,
+                                     (self.agente.posicao[1] + 1) * 100, (self.agente.posicao[0] + 1) * 100,
+                                     fill=cor_agente)
+
+        self.rotulo_info.config(
+            text=f"Energia: {self.agente.energia}, Sacola: {self.agente.sacola},")
+        self.root.update_idletasks()
