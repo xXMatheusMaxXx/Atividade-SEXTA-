@@ -1,6 +1,6 @@
 # ATIVIDADE AVALIATIVA (TÓPICOS ESPECIAIS)
 
-Nesta tarefa, você implementará um Agente Racional que limpa um quarto com o mínimo
+Nesta tarefa, você implementará um Agente Racional que limpa um quarto com o mínimo.
 possível de ações, e o objetivo é que todo o ambiente esteja limpo e o agente retorne ao lar
 (localização de início A). 
 
