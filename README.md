@@ -34,7 +34,7 @@ Sensores).
 - **Percepção de Posição:** O agente sabe em qual célula da grade ele está localizado.
 
 ### Participantes
-1. Matheus Max
-2. Alexsander Rocha
+1. Matheus Max 1900989
+2. Alexsander Rocha 1902161
 3. Laís Pantoja
 4. Samuel Sales
