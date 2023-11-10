@@ -36,5 +36,5 @@ Sensores).
 ### Participantes
 1. Matheus Max 1900989
 2. Alexsander Rocha 1902161
-3. Laís Pantoja
+3. Laís Pantoja 0560981
 4. Samuel Sales
