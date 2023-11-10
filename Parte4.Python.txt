@@ -1,0 +1,33 @@
+# Restante do código permanece o mesmo
+
+
+agente = AgenteAspirador()
+
+root = tk.Tk()
+root.title("Agente Aspirador")
+root.geometry("800x500")
+
+interface = InterfaceGrafica(root, agente)
+
+def iterar():
+    if agente.energia > 0:
+        interface.atualizar_interface()
+        if agente.sacola <= 10:
+            acao = agente.determinar_acao()
+            agente.executar_acao(acao)
+            interface.atualizar_interface()
+            root.after(2000, iterar)
+        else:
+            agente.retornar_casa()
+            agente.esvaziar_sacola()
+            acao = agente.determinar_acao()
+            agente.executar_acao(acao)
+            interface.atualizar_interface()
+            root.after(1000, iterar)
+    else:
+        interface.rotulo_estado.config(text="Estado: Desligado")
+        interface.botao_toggle.config(state=tk.DISABLED)
+
+
+iterar()
+root.mainloop()
